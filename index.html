@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Minecraft 2D</title>
 <link rel="icon" href="data:,">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#000;font-family:'Courier New',Courier,monospace;user-select:none;-webkit-user-select:none}
 #c{display:block;position:fixed;inset:0;cursor:crosshair}
@@ -38,6 +38,45 @@ button:disabled{background:#4c4c4c;color:#999;cursor:default;box-shadow:none}
 .miss span{color:#ff7070}
 .sep{height:6px}
 .note{font-size:12px;margin:6px 0 0}
+
+html,body{-webkit-touch-callout:none;touch-action:none;overscroll-behavior:none}
+#c{touch-action:none;-ms-touch-action:none}
+#touch{display:none;position:fixed;inset:0;pointer-events:none;z-index:5}
+body.touch #touch{display:block}
+body.touch #help{display:none}
+body.touch #help.show{display:block;left:8px;right:8px;bottom:auto;top:72px;max-height:40vh;overflow:auto;font-size:12px;z-index:6;pointer-events:none}
+body.touch #hud{font-size:11px;top:6px;left:8px}
+body.touch #hud h1{font-size:16px;margin-bottom:2px}
+body.touch #btns{top:6px;right:8px;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:46vw}
+body.touch #btns button{font-size:11px;padding:5px 8px}
+body.touch #panel{flex-direction:column;gap:12px;max-width:96vw;max-height:92vh;overflow:auto;padding:10px}
+body.touch .grid{grid-template-columns:repeat(9,minmax(28px,1fr));gap:2px;width:min(96vw - 40px, 360px)}
+body.touch .slot{width:auto;aspect-ratio:1;height:auto}
+body.touch .slot img{width:70%;height:70%;left:15%;top:15%}
+body.touch #recipes{min-width:0;max-width:96vw;max-height:40vh}
+.tbtn{pointer-events:auto;position:absolute;width:64px;height:64px;border-radius:14px;border:3px solid rgba(0,0,0,.75);background:rgba(40,40,40,.55);color:#fff;font-family:inherit;font-weight:bold;font-size:13px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.15;box-shadow:inset 0 0 0 2px rgba(255,255,255,.18),0 4px 0 rgba(0,0,0,.35);user-select:none;-webkit-user-select:none;touch-action:none;text-shadow:1px 1px 0 #000;padding:4px}
+.tbtn:active,.tbtn.on{background:rgba(90,110,180,.72);transform:translateY(2px);box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
+.tbtn.big{width:76px;height:76px;font-size:14px;border-radius:18px}
+#pad{position:absolute;left:max(8px,env(safe-area-inset-left));bottom:max(78px,calc(env(safe-area-inset-bottom) + 66px));width:168px;height:168px;pointer-events:none}
+#pad .tbtn{position:absolute;width:56px;height:56px;font-size:22px}
+#tbL{left:0;top:56px}#tbR{right:0;top:56px}#tbU{left:56px;top:0}
+#tact{position:absolute;right:max(8px,env(safe-area-inset-right));bottom:max(78px,calc(env(safe-area-inset-bottom) + 66px));width:168px;height:168px;pointer-events:none}
+#tbDig{right:0;bottom:0}#tbPlace{left:0;bottom:8px;width:72px;height:72px}
+#tbInv{position:absolute;right:max(8px,env(safe-area-inset-right));top:48px;width:72px;height:44px;font-size:12px}
+#tbHelp{position:absolute;right:max(8px,env(safe-area-inset-right));top:98px;width:72px;height:44px;font-size:12px}
+@media (orientation:landscape) and (max-height:500px){
+  #pad{transform:scale(.8);transform-origin:bottom left;bottom:max(58px,env(safe-area-inset-bottom))}
+  #tact{transform:scale(.8);transform-origin:bottom right;bottom:max(58px,env(safe-area-inset-bottom))}
+  #tbInv{top:40px}#tbHelp{top:86px}
+  body.touch #hud h1{font-size:14px}
+}
+@media (max-width:420px){
+  #pad{width:150px;height:150px}
+  #pad .tbtn{width:50px;height:50px}
+  #tbL{top:50px}#tbR{right:0;top:50px}#tbU{left:50px}
+  #tact{width:150px;height:150px}
+  #tbDig{width:68px;height:68px}#tbPlace{width:64px;height:64px}
+}
 </style>
 </head>
 <body>
@@ -53,7 +92,25 @@ Clic droit : poser un bloc<br>
 Clic droit sur l'établi : artisanat<br>
 1-9 / molette : choisir l'objet<br>
 E : inventaire &amp; artisanat<br>
-H : afficher / masquer l'aide
+H : afficher / masquer l'aide<br>
+<br><b>Mobile</b><br>
+Pad ← → ↑ : se déplacer / sauter<br>
+Miner (maintenir) / Poser<br>
+Toucher le monde pour viser<br>
+Toucher la barre rapide : choisir
+</div>
+<div id="touch" aria-hidden="true">
+  <div id="pad">
+    <button type="button" class="tbtn" id="tbL" data-act="left">◀</button>
+    <button type="button" class="tbtn" id="tbR" data-act="right">▶</button>
+    <button type="button" class="tbtn" id="tbU" data-act="jump">▲</button>
+  </div>
+  <div id="tact">
+    <button type="button" class="tbtn big" id="tbDig">Miner</button>
+    <button type="button" class="tbtn" id="tbPlace">Poser</button>
+  </div>
+  <button type="button" class="tbtn" id="tbInv">Inventaire</button>
+  <button type="button" class="tbtn" id="tbHelp">Aide</button>
 </div>
 <div id="toast"></div>
 <div id="menu"><div id="panel">
@@ -175,6 +232,12 @@ const player={x:0,y:0,w:.6,h:1.8,vx:0,vy:0,onGround:false,face:1,walk:0,swing:0}
 let inv=new Array(36).fill(null), sel=0;
 const keys={left:false,right:false,jump:false};
 const mouse={sx:0,sy:0,left:false,right:false,placeT:0,in:false};
+const isTouch=('ontouchstart' in window)||(navigator.maxTouchPoints>0)||window.matchMedia('(pointer:coarse)').matches;
+if(isTouch)document.body.classList.add('touch');
+let aimLock=false,touchIds=new Set();
+function aimAtFacing(){const fx=player.face>=0?1:-1;const cx=Math.floor(player.x+player.w/2)+fx;const cy=Math.floor(player.y+player.h*0.55);
+  mouse.sx=(cx+.5-camX)*TS;mouse.sy=(cy+.5-camY)*TS;mouse.in=true;aimLock=true;}
+function aimDefaultIfNeeded(){if(!aimLock&&isTouch)aimAtFacing();}
 let mine={x:-1,y:-1,p:0}, particles=[], menuOpen=false, camX=0, camY=0, selShowT=2.5;
 const idx=(x,y)=>y*W+x;
 const get=(x,y)=>(x<0||x>=W||y>=H)?B.BEDROCK:(y<0?B.AIR:world[y*W+x]);
@@ -285,7 +348,7 @@ function breakBlock(x,y){const id=world[idx(x,y)],bd=BD[id];world[idx(x,y)]=B.AI
   for(const [ax,ay] of [[x,y-1],[x-1,y],[x+1,y]])if(get(ax,ay)===B.TORCH&&!torchSupported(ax,ay)){world[idx(ax,ay)]=B.AIR;addItem(B.TORCH,1);}
   spawnParticles(x,y,id,10);computeLight();}
 function torchSupported(x,y){return solidAt(x,y+1)||solidAt(x-1,y)||solidAt(x+1,y)||y>surf[x];}
-function tryPlace(){const t=target();if(!t||!t.reach)return;const cur=get(t.x,t.y);
+function tryPlace(){if(isTouch)aimDefaultIfNeeded();const t=target();if(!t||!t.reach)return;const cur=get(t.x,t.y);
   if(cur===B.TABLE){openMenu();return;}
   const s=selItem();if(!s||ITEM[s.id].place==null)return;const id=ITEM[s.id].place;
   if(cur!==B.AIR&&cur!==B.WATER)return;
@@ -294,7 +357,7 @@ function tryPlace(){const t=target();if(!t||!t.reach)return;const cur=get(t.x,t.
   if(id===B.TORCH){if(!torchSupported(t.x,t.y))return;}
   else if(BD[id].solid){const p=player;if(t.x+1>p.x&&t.x<p.x+p.w&&t.y+1>p.y&&t.y<p.y+p.h)return;}
   world[idx(t.x,t.y)]=id;s.n--;if(s.n<=0)inv[sel]=null;player.swing=.25;computeLight();}
-function updateMining(dt){const t=target();
+function updateMining(dt){if(mouse.left&&isTouch)aimDefaultIfNeeded();const t=target();
   if(!mouse.left||!t||!t.reach){mine.p=0;mine.x=-1;return;}
   const id=get(t.x,t.y),bd=BD[id];if(id===B.AIR||id===B.WATER||bd.hard===Infinity){mine.p=0;mine.x=-1;return;}
   if(mine.x!==t.x||mine.y!==t.y)mine={x:t.x,y:t.y,p:0};
@@ -347,11 +410,13 @@ function drawPlayer(ox,oy){const p=player,u=p.h*TS/32,cx=(p.x+p.w/2)*TS-ox,top=p
 function drawCrack(sx,sy,p){const st=Math.min(9,Math.floor(p*10));ctx.strokeStyle='rgba(0,0,0,0.75)';ctx.lineWidth=2;ctx.beginPath();const r=mulberry32(42);
   for(let k=0;k<=st;k++){let x=sx+TS/2,y=sy+TS/2;ctx.moveTo(x,y);const a=r()*Math.PI*2,len=(0.25+p*0.5)*TS/2;for(let j=0;j<3;j++){x+=Math.cos(a+(r()-.5))*len/2;y+=Math.sin(a+(r()-.5))*len/2;ctx.lineTo(clamp(x,sx+1,sx+TS-1),clamp(y,sy+1,sy+TS-1));}}
   ctx.stroke();ctx.fillStyle=`rgba(0,0,0,${p*0.25})`;ctx.fillRect(sx,sy,TS,TS);}
-function drawHotbar(w,h){const S=46,x0=Math.round(w/2-S*4.5),y0=h-S-10;
+let hotbarRect={x:0,y:0,S:46,w:0,h:0};
+function drawHotbar(w,h){const S=isTouch?Math.max(40,Math.min(52,Math.floor((w-24)/9))):46;const x0=Math.round(w/2-S*4.5),y0=h-S-(isTouch?18:10);
+  hotbarRect={x:x0,y:y0,S,w:S*9,h:S};
   ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(x0-4,y0-4,S*9+8,S+8);
   for(let i=0;i<9;i++){const x=x0+i*S;ctx.fillStyle='rgba(139,139,139,0.55)';ctx.fillRect(x+2,y0+2,S-4,S-4);ctx.strokeStyle='#373737';ctx.lineWidth=2;ctx.strokeRect(x+2,y0+2,S-4,S-4);
-    const s=inv[i];if(s){ctx.drawImage(ITEM[s.id].icon,x+7,y0+7,S-14,S-14);if(s.n>1){ctx.font='bold 14px Courier New';ctx.textAlign='right';ctx.fillStyle='#3f3f3f';ctx.fillText(s.n,x+S-3,y0+S-3);ctx.fillStyle='#fff';ctx.fillText(s.n,x+S-4,y0+S-4);}}
-    ctx.font='10px Courier New';ctx.textAlign='left';ctx.fillStyle='rgba(255,255,255,.6)';ctx.fillText(i+1,x+5,y0+13);}
+    const s=inv[i];if(s){const pad=Math.round(S*0.15);ctx.drawImage(ITEM[s.id].icon,x+pad,y0+pad,S-pad*2,S-pad*2);if(s.n>1){ctx.font='bold 14px Courier New';ctx.textAlign='right';ctx.fillStyle='#3f3f3f';ctx.fillText(s.n,x+S-3,y0+S-3);ctx.fillStyle='#fff';ctx.fillText(s.n,x+S-4,y0+S-4);}}
+    if(!isTouch){ctx.font='10px Courier New';ctx.textAlign='left';ctx.fillStyle='rgba(255,255,255,.6)';ctx.fillText(i+1,x+5,y0+13);}}
   ctx.strokeStyle='#fff';ctx.lineWidth=4;ctx.strokeRect(x0+sel*S,y0,S,S);
   const s=inv[sel];if(s&&selShowT>0){ctx.globalAlpha=Math.min(1,selShowT);ctx.font='bold 16px Courier New';ctx.textAlign='center';ctx.fillStyle='#000';ctx.fillText(ITEM[s.id].name,w/2+2,y0-12);ctx.fillStyle='#fff';ctx.fillText(ITEM[s.id].name,w/2,y0-14);ctx.globalAlpha=1;}
   ctx.textAlign='left';}
@@ -404,7 +469,7 @@ function buildMenu(){const g=document.getElementById('invGrid');g.innerHTML='';
     d.innerHTML=`<div class="ri"><img src="${ICON_URL[r.out]}" alt=""><span>${r.n>1?r.n:''}</span></div><div class="rname">${ITEM[r.out].name}${r.table?'<br><small>nécessite un établi</small>':''}</div><div class="ing">${ing}</div>`;
     const b=document.createElement('button');b.textContent='Fabriquer';b.disabled=!ok;b.onclick=(e)=>{let k=0;do{if(!craft(r))break;k++;}while(e.shiftKey&&k<64&&canCraft(r));if(k)toast(`+${r.n*k} ${ITEM[r.out].name}`);buildMenu();};
     d.appendChild(b);R.appendChild(d);}}
-function openMenu(){menuOpen=true;menuPick=null;mouse.left=mouse.right=false;elMenu.style.display='flex';buildMenu();}
+function openMenu(){menuOpen=true;menuPick=null;mouse.left=mouse.right=false;keys.left=keys.right=keys.jump=false;document.querySelectorAll('.tbtn.on').forEach(b=>b.classList.remove('on'));elMenu.style.display='flex';buildMenu();}
 function closeMenu(){menuOpen=false;elMenu.style.display='none';}
 elMenu.addEventListener('mousedown',e=>{if(e.target===elMenu)closeMenu();});
 document.getElementById('bSave').onclick=()=>save(false);
@@ -413,22 +478,48 @@ for(const b of document.querySelectorAll('button'))b.addEventListener('keydown',
 
 // ---------- input ----------
 const kmap={a:'left',q:'left',arrowleft:'left',d:'right',arrowright:'right',' ':'jump',w:'jump',z:'jump',arrowup:'jump'};
+function toggleHelp(){elHelp.classList.toggle('show');if(!isTouch)elHelp.style.display=elHelp.style.display==='none'?'':'block';}
 window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();
   if(menuOpen){if(k==='e'||k==='escape'){closeMenu();e.preventDefault();}return;}
   if(kmap[k]){keys[kmap[k]]=true;e.preventDefault();}
   const m=/^(Digit|Numpad)([1-9])$/.exec(e.code);if(m){sel=+m[2]-1;selShowT=2.5;}
-  if(k==='e'){openMenu();e.preventDefault();}if(k==='h')elHelp.style.display=elHelp.style.display==='none'?'':'none';});
+  if(k==='e'){openMenu();e.preventDefault();}if(k==='h')toggleHelp();});
 window.addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(kmap[k])keys[kmap[k]]=false;});
-window.addEventListener('blur',()=>{keys.left=keys.right=keys.jump=false;mouse.left=mouse.right=false;save(true);});
-cv.addEventListener('mousemove',e=>{mouse.sx=e.clientX;mouse.sy=e.clientY;mouse.in=true;});
-cv.addEventListener('mouseleave',()=>{mouse.in=false;});
-cv.addEventListener('mousedown',e=>{mouse.sx=e.clientX;mouse.sy=e.clientY;mouse.in=true;if(e.button===0)mouse.left=true;if(e.button===2){mouse.right=true;mouse.placeT=.25;tryPlace();}e.preventDefault();});
+window.addEventListener('blur',()=>{keys.left=keys.right=keys.jump=false;mouse.left=mouse.right=false;document.querySelectorAll('.tbtn.on').forEach(b=>b.classList.remove('on'));save(true);});
+cv.addEventListener('mousemove',e=>{if(touchIds.size)return;mouse.sx=e.clientX;mouse.sy=e.clientY;mouse.in=true;aimLock=true;});
+cv.addEventListener('mouseleave',()=>{if(!touchIds.size)mouse.in=false;});
+cv.addEventListener('mousedown',e=>{if(e.button===0&&hitHotbar(e.clientX,e.clientY)){e.preventDefault();return;}
+  mouse.sx=e.clientX;mouse.sy=e.clientY;mouse.in=true;aimLock=true;if(e.button===0)mouse.left=true;if(e.button===2){mouse.right=true;mouse.placeT=.25;tryPlace();}e.preventDefault();});
 window.addEventListener('mouseup',e=>{if(e.button===0)mouse.left=false;if(e.button===2)mouse.right=false;});
 cv.addEventListener('contextmenu',e=>e.preventDefault());
 cv.addEventListener('wheel',e=>{e.preventDefault();if(menuOpen)return;sel=(sel+(e.deltaY>0?1:-1)+9)%9;selShowT=2.5;},{passive:false});
 window.addEventListener('beforeunload',()=>save(true));
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save(true);});
-function resize(){cv.width=window.innerWidth;cv.height=window.innerHeight;}window.addEventListener('resize',resize);resize();
+function hitHotbar(x,y){const r=hotbarRect;if(y<r.y||y>r.y+r.h||x<r.x||x>r.x+r.w)return false;const i=Math.floor((x-r.x)/r.S);if(i>=0&&i<9){sel=i;selShowT=2.5;return true;}return false;}
+function bindHold(el,on,off){const start=e=>{e.preventDefault();e.stopPropagation();el.classList.add('on');on();};const end=e=>{e.preventDefault();e.stopPropagation();el.classList.remove('on');off();};
+  el.addEventListener('touchstart',start,{passive:false});el.addEventListener('touchend',end,{passive:false});el.addEventListener('touchcancel',end,{passive:false});
+  el.addEventListener('mousedown',e=>{if(e.button!==0)return;start(e);});window.addEventListener('mouseup',e=>{if(el.classList.contains('on'))end(e);});}
+bindHold(document.getElementById('tbL'),()=>{keys.left=true;},()=>{keys.left=false;});
+bindHold(document.getElementById('tbR'),()=>{keys.right=true;},()=>{keys.right=false;});
+bindHold(document.getElementById('tbU'),()=>{keys.jump=true;},()=>{keys.jump=false;});
+bindHold(document.getElementById('tbDig'),()=>{aimDefaultIfNeeded();mouse.left=true;},()=>{mouse.left=false;});
+bindHold(document.getElementById('tbPlace'),()=>{mouse.right=true;mouse.placeT=.05;tryPlace();},()=>{mouse.right=false;});
+document.getElementById('tbInv').addEventListener('click',e=>{e.preventDefault();if(menuOpen)closeMenu();else openMenu();});
+document.getElementById('tbHelp').addEventListener('click',e=>{e.preventDefault();toggleHelp();});
+['tbInv','tbHelp'].forEach(id=>{const el=document.getElementById(id);el.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();},{passive:false});});
+function onCanvasTouch(e){e.preventDefault();
+  for(const t of e.changedTouches){touchIds.add(t.identifier);if(hitHotbar(t.clientX,t.clientY))continue;
+    mouse.sx=t.clientX;mouse.sy=t.clientY;mouse.in=true;aimLock=true;}}
+function onCanvasTouchEnd(e){e.preventDefault();for(const t of e.changedTouches)touchIds.delete(t.identifier);}
+cv.addEventListener('touchstart',onCanvasTouch,{passive:false});
+cv.addEventListener('touchmove',onCanvasTouch,{passive:false});
+cv.addEventListener('touchend',onCanvasTouchEnd,{passive:false});
+cv.addEventListener('touchcancel',onCanvasTouchEnd,{passive:false});
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('gesturechange',e=>e.preventDefault());
+window.addEventListener('touchmove',e=>{if(e.target===cv||e.target.closest&&e.target.closest('#touch'))e.preventDefault();},{passive:false});
+function resize(){cv.width=window.innerWidth;cv.height=window.innerHeight;
+  const vv=window.visualViewport;if(vv){/* keep full layout viewport */} }window.addEventListener('resize',resize);if(window.visualViewport)window.visualViewport.addEventListener('resize',resize);resize();
 
 // ---------- loop ----------
 let last=performance.now(),acc=0,saveT=0,infoT=0,fps=60,frames=0,fpsT=0;
@@ -450,7 +541,7 @@ function frame(now){let dt=Math.min(0.05,(now-last)/1000);last=now;
   requestAnimationFrame(frame);}
 
 // debug / test hook
-window.__mc={light:(x,y)=>[sky[y*W+x],blk[y*W+x]],get player(){return player;},get inv(){return inv;},get time(){return time;},set time(v){time=v;},give:(id,n)=>addItem(id,n),B,I,get:get,surf:()=>surf,
+window.__mc={isTouch,hotbarRect:()=>hotbarRect,light:(x,y)=>[sky[y*W+x],blk[y*W+x]],get player(){return player;},get inv(){return inv;},get time(){return time;},set time(v){time=v;},give:(id,n)=>addItem(id,n),B,I,get:get,surf:()=>surf,
   setSel:v=>{sel=v;},newWorld,save,load,camera:()=>({x:camX,y:camY}),render};
 
 if(!load())newWorld((Math.random()*2**32)>>>0);
